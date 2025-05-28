@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Brand Color Palette Generator</title>
+    <style>
+      /* Inline CSS - Required for Figma plugins */
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --background: 0 0% 100%;
+        --foreground: 222.2 84% 4.9%;
+        --card: 0 0% 100%;
+        --card-foreground: 222.2 84% 4.9%;
+        --primary: 222.2 47.4% 11.2%;
+        --primary-foreground: 210 40% 98%;
+        --secondary: 210 40% 96%;
+        --secondary-foreground: 222.2 47.4% 11.2%;
+        --muted: 210 40% 96%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+        --accent: 210 40% 96%;
+        --border: 214.3 31.8% 91.4%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+        --radius: 8px;
+        --success: 142.1 76.2% 36.3%;
+        --warning: 47.9 95.8% 53.1%;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        font-size: 13px;
+        line-height: 1.5;
+        color: hsl(var(--foreground));
+        background-color: hsl(var(--background));
+        padding: 20px;
+      }
+
+      #app {
+        max-width: 100%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      /* Header */
+      .header {
+        text-align: center;
+        padding: 20px 0;
+        background: hsl(var(--background));
+        border-radius: var(--radius);
+      }
+
+      .header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: hsl(var(--foreground));
+        margin-bottom: 8px;
+        letter-spacing: -0.025em;
+        line-height: 1.2;
+      }
+
+      .subtitle {
+        color: hsl(var(--muted-foreground));
+        font-size: 14px;
+        font-weight: 500;
+        max-width: 320px;
+        margin: 0 auto;
+        line-height: 1.4;
+      }
+
+      /* Input sections */
+      .input-section {
+        background: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        padding: 24px;
+      }
+
+      .input-section h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: hsl(var(--foreground));
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+      }
+
+      .input-group:last-child {
+        margin-bottom: 0;
+      }
+
+      .input-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        font-size: 13px;
+        color: hsl(var(--foreground));
+      }
+
+      .color-input-container {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .input-group input[type="color"] {
+        width: 60px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        cursor: pointer;
+      }
+
+      .input-group input[type="text"] {
+        flex: 1;
+        height: 40px;
+        padding: 0 12px;
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        font-size: 13px;
+      }
+
+      .input-group input[type="text"]:focus {
+        outline: none;
+        border-color: hsl(var(--primary));
+      }
+
+      .input-group select {
+        width: 100%;
+        height: 40px;
+        padding: 0 12px;
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        font-size: 13px;
+      }
+
+      .input-group select:focus {
+        outline: none;
+        border-color: hsl(var(--primary));
+      }
+
+      .input-group input[type="radio"] {
+        margin-right: 8px;
+      }
+
+      .input-group label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        border-radius: var(--radius);
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: 1px solid transparent;
+        padding: 0 24px;
+        height: 44px;
+        gap: 8px;
+        width: 100%;
+      }
+
+      .btn:disabled {
+        pointer-events: none;
+        opacity: 0.5;
+      }
+
+      .btn-primary {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        border: 1px solid hsl(var(--primary));
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: hsl(var(--primary) / 0.9);
+      }
+
+      /* Loading */
+      .loading {
+        text-align: center;
+        padding: 40px 24px;
+        background: hsl(var(--card));
+        border-radius: var(--radius);
+        border: 1px solid hsl(var(--border));
+      }
+
+      .loader {
+        width: 24px;
+        height: 24px;
+        border: 2px solid hsl(var(--muted));
+        border-top: 2px solid hsl(var(--primary));
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 16px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .loading p {
+        color: hsl(var(--muted-foreground));
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.4;
+      }
+
+      /* Results */
+      .results {
+        background: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        padding: 24px;
+      }
+
+      .results h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: hsl(var(--foreground));
+      }
+
+      .success-message {
+        color: hsl(var(--success));
+        font-weight: 500;
+        margin-bottom: 16px;
+      }
+
+      .error-message {
+        color: hsl(var(--destructive));
+        font-weight: 500;
+        margin-bottom: 16px;
+      }
+
+      /* Hidden utility */
+      .hidden {
+        display: none !important;
+      }
+
+      /* Color preview */
+      .color-preview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .color-swatch {
+        aspect-ratio: 1;
+        border-radius: 4px;
+        border: 1px solid hsl(var(--border));
+        position: relative;
+      }
+
+      .color-label {
+        position: absolute;
+        bottom: 2px;
+        left: 2px;
+        right: 2px;
+        font-size: 10px;
+        font-weight: 600;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 2px;
+        padding: 1px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="header">
+        <h1>Brand Color Palette Generator</h1>
+        <p class="subtitle">
+          Generate a complete 9-shade color palette from your brand color
+        </p>
+      </div>
+
+      <div id="main-section">
+        <div class="input-section">
+          <h3>🎨 Brand Color</h3>
+          <div class="input-group">
+            <label for="brandColor">Choose your brand color</label>
+            <div class="color-input-container">
+              <input type="color" id="brandColor" value="#653EE8" />
+              <input
+                type="text"
+                id="brandColorText"
+                value="#653EE8"
+                placeholder="#RRGGBB"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="input-section">
+          <h3>📁 Target Collection</h3>
+
+          <div class="input-group">
+            <label>
+              <input
+                type="radio"
+                name="collection-choice"
+                value="existing"
+                id="existing-radio"
+                checked
+              />
+              Use existing collection
+            </label>
+            <select id="brandCollection" style="margin-top: 8px">
+              <option value="">Loading collections...</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>
+              <input
+                type="radio"
+                name="collection-choice"
+                value="new"
+                id="new-radio"
+              />
+              Create new collection
+            </label>
+            <input
+              type="text"
+              id="newCollectionName"
+              placeholder="Enter collection name..."
+              disabled
+              style="margin-top: 8px"
+            />
+          </div>
+        </div>
+
+        <button id="generateBrandColors" class="btn btn-primary" disabled>
+          Generate Color Palette
+        </button>
+      </div>
+
+      <div id="loading-section" class="loading hidden">
+        <div class="loader"></div>
+        <p>Generating color palette...</p>
+      </div>
+
+      <div id="results-section" class="results hidden">
+        <h3>✅ Palette Generated!</h3>
+        <div id="results-message"></div>
+        <div id="color-preview" class="color-preview"></div>
+      </div>
+    </div>
+
+    <script>
+      console.log("Brand Color Palette Generator loaded");
+
+      var isProcessing = false;
+      var localCollections = [];
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var brandColorInput = document.getElementById("brandColor");
+        var brandColorText = document.getElementById("brandColorText");
+        var brandCollection = document.getElementById("brandCollection");
+        var newCollectionName = document.getElementById("newCollectionName");
+        var existingRadio = document.getElementById("existing-radio");
+        var newRadio = document.getElementById("new-radio");
+        var generateBtn = document.getElementById("generateBrandColors");
+
+        // Sync color inputs
+        brandColorInput.addEventListener("input", function (e) {
+          brandColorText.value = e.target.value;
+          updateGenerateButton();
+        });
+
+        brandColorText.addEventListener("input", function (e) {
+          var color = e.target.value;
+          if (/^#[0-9A-F]{6}$/i.test(color)) {
+            brandColorInput.value = color;
+          }
+          updateGenerateButton();
+        });
+
+        // Collection selection
+        brandCollection.addEventListener("change", updateGenerateButton);
+        newCollectionName.addEventListener("input", updateGenerateButton);
+
+        // Radio button handling
+        existingRadio.addEventListener("change", function () {
+          if (this.checked) {
+            brandCollection.disabled = false;
+            newCollectionName.disabled = true;
+            newCollectionName.value = "";
+            updateGenerateButton();
+          }
+        });
+
+        newRadio.addEventListener("change", function () {
+          if (this.checked) {
+            brandCollection.disabled = true;
+            brandCollection.value = "";
+            newCollectionName.disabled = false;
+            updateGenerateButton();
+          }
+        });
+
+        // Generate button
+        generateBtn.addEventListener("click", function () {
+          var color = brandColorText.value;
+          var collectionChoice = existingRadio.checked ? "existing" : "new";
+          var collectionId = null;
+          var collectionName = null;
+
+          if (!color) {
+            alert("Please enter a valid hex color");
+            return;
+          }
+
+          if (collectionChoice === "existing") {
+            collectionId = brandCollection.value;
+            if (!collectionId) {
+              alert("Please select an existing collection");
+              return;
+            }
+          } else {
+            collectionName = newCollectionName.value.trim();
+            if (!collectionName) {
+              alert("Please enter a name for the new collection");
+              return;
+            }
+          }
+
+          generateColorPalette(
+            color,
+            collectionChoice,
+            collectionId,
+            collectionName
+          );
+        });
+
+        function updateGenerateButton() {
+          var hasColor = /^#[0-9A-F]{6}$/i.test(brandColorText.value);
+          var hasValidCollection = false;
+
+          if (existingRadio.checked) {
+            hasValidCollection = brandCollection.value !== "";
+          } else {
+            hasValidCollection = newCollectionName.value.trim() !== "";
+          }
+
+          generateBtn.disabled =
+            !hasColor || !hasValidCollection || isProcessing;
+        }
+
+        function generateColorPalette(
+          color,
+          collectionChoice,
+          collectionId,
+          collectionName
+        ) {
+          if (isProcessing) return;
+          isProcessing = true;
+
+          showSection("loading-section");
+
+          parent.postMessage(
+            {
+              pluginMessage: {
+                type: "generate-brand-colors",
+                color: color,
+                collectionChoice: collectionChoice,
+                collectionId: collectionId,
+                collectionName: collectionName,
+              },
+            },
+            "*"
+          );
+        }
+
+        function showSection(sectionId) {
+          var sections = ["main-section", "loading-section", "results-section"];
+          for (var i = 0; i < sections.length; i++) {
+            var section = document.getElementById(sections[i]);
+            if (section) {
+              if (sections[i] === sectionId) {
+                section.classList.remove("hidden");
+              } else {
+                section.classList.add("hidden");
+              }
+            }
+          }
+        }
+
+        function displayResults(success, message, created, updated, colors) {
+          isProcessing = false;
+          showSection("results-section");
+
+          var resultsMessage = document.getElementById("results-message");
+          var colorPreview = document.getElementById("color-preview");
+
+          if (success) {
+            resultsMessage.innerHTML =
+              '<div class="success-message">' + message + "</div>";
+
+            // Show color preview using the colors from the plugin
+            if (colors) {
+              colorPreview.innerHTML = "";
+              for (var shade in colors) {
+                if (colors.hasOwnProperty(shade)) {
+                  var color = colors[shade];
+                  var swatch = document.createElement("div");
+                  swatch.className = "color-swatch";
+                  swatch.style.backgroundColor =
+                    "rgb(" +
+                    Math.round(color.r * 255) +
+                    "," +
+                    Math.round(color.g * 255) +
+                    "," +
+                    Math.round(color.b * 255) +
+                    ")";
+                  swatch.innerHTML =
+                    '<div class="color-label">' + shade + "</div>";
+                  colorPreview.appendChild(swatch);
+                }
+              }
+            }
+          } else {
+            resultsMessage.innerHTML =
+              '<div class="error-message">' + message + "</div>";
+            colorPreview.innerHTML = "";
+          }
+
+          // Reset button
+          updateGenerateButton();
+        }
+
+        // Message handler
+        window.onmessage = function (event) {
+          var msg = event.data.pluginMessage;
+
+          if (msg.type === "collections-loaded") {
+            if (msg.success && msg.localCollections) {
+              localCollections = msg.localCollections;
+              populateCollections(msg.localCollections);
+            }
+          }
+
+          if (msg.type === "brand-colors-complete") {
+            if (msg.success) {
+              var message = "Successfully generated color palette!";
+              if (msg.collectionName) {
+                message += "<br>Created new collection: " + msg.collectionName;
+              }
+              message += "<br>Created: " + msg.created.length + " variables";
+              message += "<br>Updated: " + msg.updated.length + " variables";
+
+              displayResults(
+                true,
+                message,
+                msg.created,
+                msg.updated,
+                msg.colors
+              );
+            } else {
+              displayResults(false, "Error: " + msg.message);
+            }
+          }
+        };
+
+        function populateCollections(collections) {
+          brandCollection.innerHTML =
+            '<option value="">Select a collection...</option>';
+
+          if (collections && collections.length > 0) {
+            for (var i = 0; i < collections.length; i++) {
+              var collection = collections[i];
+              var option = document.createElement("option");
+              option.value = collection.id;
+              option.textContent =
+                collection.name + " (" + collection.modeCount + " modes)";
+              brandCollection.appendChild(option);
+            }
+          } else {
+            var option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No local collections found";
+            option.disabled = true;
+            brandCollection.appendChild(option);
+          }
+
+          updateGenerateButton();
+        }
+
+        // Request collections on load
+        parent.postMessage({ pluginMessage: { type: "get-collections" } }, "*");
+      });
+    </script>
+  </body>
+</html>
